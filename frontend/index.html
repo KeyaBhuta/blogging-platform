@@ -1,66 +1,818 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-<meta charset='UTF-8'>
-<title>BlogHub - Feed</title>
-<style>
-body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-nav { display:flex; justify-content:space-between; align-items:center;
-padding:10px 0; border-bottom:2px solid #2563eb; margin-bottom:20px; }
-.search-bar { display:flex; gap:10px; margin-bottom:20px; }
-.search-bar input, .search-bar select { padding:8px; border:1px solid #ccc; border-radius
-:4px; }
-.search-bar input { flex:1; }
-.card { border:1px solid #e2e8f0; border-radius:8px; padding:16px;
-margin-bottom:16px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
-.card h3 a { color:#1a1a2e; text-decoration:none; }
-.card h3 a:hover { color:#2563eb; }
-.meta { color:#64748b; font-size:13px; margin:4px 0; }
-.excerpt { color:#374151; margin:8px 0; }
-nav a { color:#2563eb; text-decoration:none; margin-left:12px; }
-.btn { padding:8px 16px; background:#2563eb; color:white;
-border:none; border-radius:4px; cursor:pointer; text-decoration:none; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InkWell — The Blogging Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0d1b2a;
+      --navy-mid: #1a2e45;
+      --navy-light: #243b55;
+      --brown: #7c4e32;
+      --brown-light: #a06640;
+      --brown-warm: #c8956a;
+      --cream: #f5f0e8;
+      --cream-dark: #e8dfd0;
+      --white: #ffffff;
+      --text-light: #b0c4de;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--navy);
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      height: 68px;
+      background: var(--navy);
+      border-bottom: 2px solid var(--brown);
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--cream);
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--brown-warm); }
+
+    .nav-links {
+      display: flex; gap: 32px; align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-light);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--brown-warm); }
+
+    .nav-right { display: flex; gap: 12px; align-items: center; }
+
+    .btn-outline {
+      border: 1.5px solid var(--brown-warm);
+      color: var(--brown-warm);
+      background: transparent;
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-outline:hover { background: var(--brown-warm); color: var(--navy); }
+
+    .btn-primary {
+      background: var(--brown);
+      color: var(--cream);
+      border: none;
+      padding: 9px 22px;
+      border-radius: 4px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover { background: var(--brown-light); }
+
+    #nav-auth-btns { display: flex; gap: 10px; }
+    #nav-user-info { display: flex; gap: 14px; align-items: center; }
+    #nav-user-info span { color: var(--brown-warm); font-weight: 500; font-size: 0.9rem; }
+
+    /* ── HERO ── */
+    .hero {
+      margin-top: 68px;
+      min-height: 85vh;
+      background: var(--navy);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brown), var(--brown-warm), var(--brown));
+    }
+
+    .hero-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 60px 80px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      background: var(--brown);
+      color: var(--cream);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 2px;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 4vw, 3.8rem);
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--brown-warm);
+    }
+
+    .hero-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      color: var(--text-light);
+      line-height: 1.7;
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+
+    .hero-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+
+    .hero-cta {
+      background: var(--brown);
+      color: var(--cream);
+      padding: 14px 32px;
+      border: none;
+      border-radius: 4px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .hero-cta:hover { background: var(--brown-light); }
+
+    .hero-cta-ghost {
+      color: var(--cream);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      padding: 13px 28px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .hero-cta-ghost:hover { border-color: var(--brown-warm); color: var(--brown-warm); }
+
+    /* Hero image grid area */
+    .hero-visual {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 
+      ════════════════════════════════════════════════════
+      PLACEHOLDER: Hero Featured Image
+      Replace the gradient below with your actual hero image.
+      Use an <img> tag or set background-image on .hero-img-placeholder.
+      Recommended size: 800x700px, high quality editorial photo.
+      ════════════════════════════════════════════════════
+    */
+    .hero-img-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-light) 40%, #2e4a6a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .hero-img-placeholder .ph-icon {
+      font-size: 3.5rem;
+      opacity: 0.3;
+    }
+
+    .hero-img-placeholder .ph-label {
+      color: rgba(255,255,255,0.25);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    .hero-featured-card {
+      position: absolute;
+      bottom: 36px;
+      left: 24px;
+      right: 24px;
+      background: rgba(13,27,42,0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(200,149,106,0.25);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .hero-featured-card .fc-author {
+      font-size: 0.75rem;
+      color: var(--brown-warm);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .hero-featured-card .fc-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: var(--white);
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .hero-featured-card .fc-excerpt {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      background: var(--navy-mid);
+      padding: 0 80px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(124,78,50,0.25);
+      overflow-x: auto;
+    }
+
+    .filter-label {
+      color: var(--text-light);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      margin-right: 8px;
+    }
+
+    .filter-chip {
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      color: var(--text-light);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      margin: 10px 4px;
+    }
+
+    .filter-chip:hover, .filter-chip.active {
+      background: var(--brown);
+      border-color: var(--brown);
+      color: var(--cream);
+    }
+
+    .search-wrap {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--white);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.2s, width 0.2s;
+    }
+
+    .search-input::placeholder { color: rgba(255,255,255,0.3); }
+    .search-input:focus { border-color: var(--brown-warm); width: 280px; }
+
+    /* ── MAIN CONTENT ── */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 60px 48px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 36px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 48px;
+      height: 3px;
+      background: var(--brown);
+      margin-top: 8px;
+    }
+
+    .section-link {
+      font-size: 0.85rem;
+      color: var(--brown);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .section-link:hover { text-decoration: underline; }
+
+    /* ── BLOG GRID ── */
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .blog-card {
+      background: var(--white);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--cream-dark);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .blog-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(13,27,42,0.12);
+    }
+
+    /* 
+      ════════════════════════════════════════════════════
+      PLACEHOLDER: Blog Card Thumbnail
+      Each .card-img div is a placeholder for a featured image.
+      If your backend returns an imageUrl field on the blog object,
+      replace the gradient with: background-image: url(b.imageUrl)
+      Recommended image size: 480x280px
+      ════════════════════════════════════════════════════
+    */
+    .card-img {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, var(--navy-light), var(--navy-mid));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-img-ph {
+      color: rgba(255,255,255,0.18);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .card-category {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      background: var(--brown);
+      color: var(--cream);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 2px;
+    }
+
+    .card-body { padding: 20px 22px 22px; }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .card-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--navy-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--brown-warm);
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .card-author { font-size: 0.8rem; color: var(--navy-mid); font-weight: 500; }
+
+    .card-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--cream-dark); }
+
+    .card-date { font-size: 0.78rem; color: #999; }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.4;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-excerpt {
+      font-size: 0.84rem;
+      color: #666;
+      line-height: 1.65;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid var(--cream-dark);
+    }
+
+    .card-read {
+      font-size: 0.8rem;
+      color: var(--brown);
+      font-weight: 600;
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .card-action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #aaa;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s;
+      padding: 0;
+    }
+
+    .card-action-btn:hover { color: var(--brown); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 80px 0;
+      color: #aaa;
+      grid-column: 1 / -1;
+    }
+
+    .empty-state .es-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--navy-mid); margin-bottom: 6px; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--navy);
+      color: var(--cream);
+      padding: 14px 22px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      border-left: 4px solid var(--brown-warm);
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      padding: 40px 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 2px solid var(--brown);
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--cream);
+    }
+
+    .footer-logo span { color: var(--brown-warm); }
+
+    footer p { color: var(--text-light); font-size: 0.82rem; }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-visual { height: 280px; }
+      .hero-text { padding: 60px 32px; }
+      .blog-grid { grid-template-columns: 1fr 1fr; }
+      nav { padding: 0 24px; }
+      main { padding: 40px 24px; }
+    }
+
+    @media (max-width: 600px) {
+      .blog-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-<nav>
-<span style='font-size:22px;font-weight:bold;color:#2563eb;'>BlogHub</span>
-<div>
-<span id='nav-user'></span>
-<a href='create-blog.html'>+ New Blog</a>
-<a href='profile.html'>Profile</a>
-<a href='#' onclick='logout()'>Logout</a>
-</div>
-</nav>
-<div class='search-bar'>
-<input id='search' placeholder='Search blogs...' oninput='loadBlogs()'>
-<select id='catFilter' onchange='loadBlogs()'>
-<option value=''>All Categories</option>
-<option value='1'>Tech</option>
-<option value='2'>Travel</option>
-<option value='3'>Health</option>
-<option value='4'>Finance</option>
-<option value='5'>Lifestyle</option>
-</select>
-</div>
-<div id='feed'><p>Loading blogs...</p></div>
-<script src='js/api.js'></script>
-<script>
-document.getElementById('nav-user').textContent = getUsername() || '';
-async function loadBlogs() {
-const s = document.getElementById('search').value;
-const c = document.getElementById('catFilter').value;
-const blogs = await getBlogs(s, c);
-const feed = document.getElementById('feed');
-if (!blogs.length) { feed.innerHTML = '<p>No blogs found.</p>'; return; }
-feed.innerHTML = blogs.map(b => `
-<div class='card'>
-<h3><a href='blog-detail.html?id=${b.id}'>${b.title}</a></h3>
-<p class='meta'>By ${b.author.username}</p>
-<p class='excerpt'>${b.content.substring(0, 150)}...</p>
-<a href='blog-detail.html?id=${b.id}' class='btn'>Read More</a>
-</div>`).join('');
-}
-loadBlogs();
-</script>
-</body></html>
+
+  <!-- NAVBAR -->
+  <nav>
+    <a href="index.html" class="nav-logo">Ink<span>Well</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Feed</a></li>
+      <li><a href="#" onclick="goProfile()">Profile</a></li>
+    </ul>
+    <div class="nav-right">
+      <div id="nav-auth-btns">
+        <a href="login.html" class="btn-outline">Log In</a>
+        <a href="register.html" class="btn-primary">Join Now</a>
+      </div>
+      <div id="nav-user-info" style="display:none">
+        <span id="nav-username"></span>
+        <a href="create-blog.html" class="btn-primary">+ Write</a>
+        <button class="btn-outline" onclick="logout()">Log Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-tag">✦ Featured Story</div>
+      <h1 class="hero-title" id="hero-title">
+        Ideas Worth<br /><em>Writing About</em>
+      </h1>
+      <p class="hero-sub" id="hero-sub">
+        Discover thoughtful stories on technology, design, culture and everything in between — written by a community that cares about words.
+      </p>
+      <div class="hero-actions">
+        <a href="#feed" class="hero-cta">Explore Stories</a>
+        <a href="register.html" class="hero-cta-ghost">Start Writing →</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <!--
+        ═══════════════════════════════════════════════════
+        PLACEHOLDER: HERO IMAGE
+        Replace this entire .hero-img-placeholder div with:
+          <img src="your-hero-image.jpg" style="width:100%;height:100%;object-fit:cover;" />
+        Or set background-image on .hero-visual in CSS.
+        Suggested: A dramatic editorial photo, illustrated crowd,
+        or abstract texture — 1000x800px minimum.
+        ═══════════════════════════════════════════════════
+      -->
+      <div class="hero-img-placeholder">
+        <img src="frontend\assets\resized-image.png" style="width:100%;height:100%;object-fit:cover;" />
+        
+      </div>
+
+      <div class="hero-featured-card" id="hero-featured-card" style="display:none">
+        <div class="fc-author" id="hfc-author"></div>
+        <div class="fc-title" id="hfc-title"></div>
+        <div class="fc-excerpt" id="hfc-excerpt"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-chip active" onclick="filterCat(this, '')">All Posts</button>
+    <button class="filter-chip" onclick="filterCat(this, '1')">Technology</button>
+    <button class="filter-chip" onclick="filterCat(this, '2')">Travel</button>
+    <button class="filter-chip" onclick="filterCat(this, '3')">Health</button>
+    <button class="filter-chip" onclick="filterCat(this, '4')">Finance</button>
+    <button class="filter-chip" onclick="filterCat(this, '5')">Lifestyle</button>
+    <div class="search-wrap">
+      <input class="search-input" id="search" placeholder="Search stories…" oninput="loadBlogs()" />
+    </div>
+  </div>
+
+  <!-- MAIN FEED -->
+  <main id="feed">
+    <div class="section-header">
+      <h2 class="section-title">Recent Stories</h2>
+      <a href="create-blog.html" class="section-link">Write a story →</a>
+    </div>
+    <div class="blog-grid" id="blog-grid">
+      <div class="empty-state">
+        <div class="es-icon">📖</div>
+        <h3>Loading stories…</h3>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Ink<span>Well</span></div>
+    <p>© 2024 InkWell Blogging Platform</p>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/api.js"></script>
+  <script>
+    const CAT_NAMES = { '1':'Technology','2':'Travel','3':'Health','4':'Finance','5':'Lifestyle' };
+    let activeCatId = '';
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function goProfile() {
+      const uid = getUserId();
+      if (!uid) { window.location.href = 'login.html'; return; }
+      window.location.href = `profile.html?id=${uid}`;
+    }
+
+    function filterCat(btn, catId) {
+      document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCatId = catId;
+      loadBlogs();
+    }
+
+    function timeAgo(dateStr) {
+      if (!dateStr) return '';
+      const diff = (Date.now() - new Date(dateStr)) / 1000;
+      if (diff < 3600) return Math.floor(diff/60) + ' min ago';
+      if (diff < 86400) return Math.floor(diff/3600) + ' hr ago';
+      return Math.floor(diff/86400) + ' days ago';
+    }
+
+    async function loadBlogs() {
+      const search = document.getElementById('search').value;
+      const grid = document.getElementById('blog-grid');
+      grid.innerHTML = `<div class="empty-state"><div class="es-icon">⏳</div><h3>Loading…</h3></div>`;
+      try {
+        const blogs = await getBlogs(search, activeCatId);
+        if (!Array.isArray(blogs) || blogs.length === 0) {
+          grid.innerHTML = `<div class="empty-state"><div class="es-icon">📭</div><h3>No stories yet</h3><p>Be the first to share a story.</p></div>`;
+          return;
+        }
+
+        // Show featured post in hero
+        const featured = blogs[0];
+        if (featured) {
+          document.getElementById('hfc-author').textContent = 'By ' + (featured.author?.username || 'Author');
+          document.getElementById('hfc-title').textContent = featured.title;
+          document.getElementById('hfc-excerpt').textContent = (featured.content || '').substring(0, 100) + '…';
+          document.getElementById('hero-featured-card').style.display = 'block';
+        }
+
+        grid.innerHTML = blogs.map(b => {
+          const initials = (b.author?.username || 'U').substring(0,2).toUpperCase();
+          const catName = b.category?.name || '';
+          return `
+          <div class="blog-card" onclick="window.location.href='blog-detail.html?id=${b.id}'">
+            <div class="card-img">
+              <!--
+                PLACEHOLDER: Blog thumbnail image
+                If you add imageUrl to your Blog model, replace the div below with:
+                <img src="${b.imageUrl || ''}" onerror="this.style.display='none'" />
+              -->
+              <div class="card-img-ph">Blog Cover Image</div>
+              ${catName ? `<div class="card-category">${catName}</div>` : ''}
+            </div>
+            <div class="card-body">
+              <div class="card-meta">
+                <div class="card-avatar">${initials}</div>
+                <span class="card-author">${b.author?.username || 'Unknown'}</span>
+                <div class="card-dot"></div>
+                <span class="card-date">${timeAgo(b.createdAt)}</span>
+              </div>
+              <div class="card-title">${b.title}</div>
+              <div class="card-excerpt">${(b.content || '').substring(0, 160)}…</div>
+              <div class="card-footer">
+                <a class="card-read" href="blog-detail.html?id=${b.id}">Read Story →</a>
+                <div class="card-actions">
+                  <button class="card-action-btn" onclick="event.stopPropagation(); handleLike(event, ${b.id})">♥ Like</button>
+                  <button class="card-action-btn" onclick="event.stopPropagation(); handleBookmark(event, ${b.id})">🔖</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+
+      } catch (e) {
+        grid.innerHTML = `<div class="empty-state"><div class="es-icon">⚠️</div><h3>Could not load stories</h3><p>Check your backend connection.</p></div>`;
+      }
+    }
+
+    async function handleLike(e, blogId) {
+      if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+      try { await likeBlog(blogId); showToast('Liked! ♥'); } catch {}
+    }
+
+    async function handleBookmark(e, blogId) {
+      if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+      try { await bookmarkBlog(blogId); showToast('Bookmarked! 🔖'); } catch {}
+    }
+
+    // Init
+    (function init() {
+      if (isLoggedIn()) {
+        document.getElementById('nav-auth-btns').style.display = 'none';
+        document.getElementById('nav-user-info').style.display = 'flex';
+        document.getElementById('nav-username').textContent = 'Hi, ' + getUsername();
+      }
+      loadBlogs();
+    })();
+  </script>
+</body>
+</html>

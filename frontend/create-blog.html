@@ -1,49 +1,389 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-<meta charset='UTF-8'>
-<title>Create Blog - BlogHub</title>
-<style>
-body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px
-; }
-input, select, textarea { width:100%; padding:10px; margin:8px 0;
-box-sizing:border-box; border:1px solid #ccc; border-radius:4px
-; }
-textarea { height: 300px; }
-button { padding:12px 24px; background:#2563eb; color:white;
-border:none; border-radius:4px; cursor:pointer; font-size:16px; }
-.error { color:red; }
-a { color:#2563eb; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Write a Story — InkWell</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=Lora:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0d1b2a; --navy-mid: #1a2e45; --navy-light: #243b55;
+      --brown: #7c4e32; --brown-light: #a06640; --brown-warm: #c8956a;
+      --cream: #f5f0e8; --cream-dark: #e8dfd0; --white: #ffffff; --text-light: #b0c4de;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); min-height: 100vh; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 68px;
+      background: var(--navy); border-bottom: 2px solid var(--brown);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: var(--cream); text-decoration: none; }
+    .nav-logo span { color: var(--brown-warm); }
+    .nav-back { color: var(--text-light); text-decoration: none; font-size: 0.88rem; }
+    .nav-back:hover { color: var(--brown-warm); }
+
+    .page-wrap {
+      margin-top: 68px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 60px 48px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 32px;
+    }
+
+    .form-card {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 32px 36px;
+      border: 1px solid var(--cream-dark);
+    }
+
+    .field-group { margin-bottom: 24px; }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--navy-mid);
+      margin-bottom: 8px;
+    }
+
+    label .req { color: var(--brown); margin-left: 2px; }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 6px;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--navy);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: var(--brown); background: var(--white); }
+
+    /* Rich text toolbar */
+    .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      padding: 10px 12px;
+      background: var(--cream);
+      border: 1.5px solid var(--cream-dark);
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .tb-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--navy-mid);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .tb-btn:hover { background: var(--cream-dark); border-color: var(--cream-dark); color: var(--navy); }
+
+    .tb-sep { width: 1px; background: var(--cream-dark); margin: 4px 4px; }
+
+    #content {
+      border-radius: 0 0 6px 6px;
+      min-height: 280px;
+      resize: vertical;
+      font-family: 'Lora', serif;
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+
+    textarea#excerpt { min-height: 90px; resize: vertical; }
+
+    /* Sidebar */
+    .sidebar-card {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 24px 26px;
+      border: 1px solid var(--cream-dark);
+      margin-bottom: 20px;
+    }
+
+    .sidebar-card h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--brown);
+    }
+
+    /*
+      ═══════════════════════════════════════════
+      PLACEHOLDER: Featured Image Upload
+      The box below is a visual placeholder.
+      To enable real image uploads you would need:
+        1. A multipart POST endpoint in Spring Boot
+        2. File storage (local or S3)
+        3. Returning an imageUrl from the blog API
+      For now, this is a UI-only preview. Images
+      are NOT sent to backend (no backend changes needed).
+      ═══════════════════════════════════════════
+    */
+    .image-dropzone {
+      border: 2px dashed var(--cream-dark);
+      border-radius: 8px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-dropzone:hover { border-color: var(--brown-warm); }
+
+    .image-dropzone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+
+    .dropzone-icon { font-size: 2rem; margin-bottom: 8px; }
+    .dropzone-text { font-size: 0.82rem; color: #999; line-height: 1.6; }
+    .dropzone-browse { color: var(--brown-light); font-weight: 600; }
+
+    #img-preview {
+      width: 100%; height: 160px; object-fit: cover;
+      border-radius: 6px; display: none; margin-top: 12px;
+    }
+
+    .note-text {
+      font-size: 0.72rem;
+      color: #bbb;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .publish-btn {
+      width: 100%;
+      background: var(--navy);
+      color: var(--cream);
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.2s;
+      margin-top: 4px;
+    }
+    .publish-btn:hover { background: var(--navy-light); }
+
+    .draft-btn {
+      width: 100%;
+      background: transparent;
+      color: var(--navy-mid);
+      border: 1.5px solid var(--cream-dark);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: border-color 0.2s;
+    }
+    .draft-btn:hover { border-color: var(--brown-warm); color: var(--brown); }
+
+    .error-msg { background: #fde8e8; border: 1px solid #f5c6c6; color: #c0392b; padding: 12px 16px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 16px; display: none; }
+    .success-msg { background: #e8f8ee; border: 1px solid #b2dfca; color: #1e7e45; padding: 12px 16px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 16px; display: none; }
+
+    @media (max-width: 900px) {
+      .page-wrap { grid-template-columns: 1fr; padding: 40px 20px; }
+    }
+  </style>
 </head>
 <body>
-<p><a href='index.html'>&larr; Back</a></p>
-<h2>Create New Blog</h2>
-<input id='title' placeholder='Blog Title'>
-<select id='category'>
-<option value=''>Select Category</option>
-<option value='1'>Tech</option>
-<option value='2'>Travel</option>
-<option value='3'>Health</option>
-<option value='4'>Finance</option>
-<option value='5'>Lifestyle</option>
-</select>
-<textarea id='content' placeholder='Write your blog content here...'></textarea>
-<button onclick='doCreate()'>Publish Blog</button>
-<p class='error' id='err'></p>
-<script src='js/api.js'></script>
-<script>
-if (!isLoggedIn()) window.location.href = 'login.html';
-async function doCreate() {
-const title = document.getElementById('title').value.trim();
-const content = document.getElementById('content').value.trim();
-const categoryId = document.getElementById('category').value;
-if (!title || !content) {
-document.getElementById('err').textContent = 'Title and content required';
-return;
-}
-const data = await createBlog(title, content, categoryId || null);
-if (data.id) window.location.href = `blog-detail.html?id=${data.id}`;
-else document.getElementById('err').textContent = data.message || 'Failed to create';
-}
-</script>
+  <nav>
+    <a href="index.html" class="nav-logo">Ink<span>Well</span></a>
+    <a href="index.html" class="nav-back">← Back to Feed</a>
+  </nav>
+
+  <div class="page-wrap" style="margin-top:128px">
+    <!-- Main form -->
+    <div>
+      <h1 class="page-title">Write a New Story</h1>
+      <div class="error-msg" id="error-msg"></div>
+      <div class="success-msg" id="success-msg"></div>
+
+      <div class="form-card">
+        <div class="field-group">
+          <label>Title <span class="req">*</span></label>
+          <input type="text" id="title" placeholder="Your story title…" />
+        </div>
+
+        <div class="field-group">
+          <label>Content <span class="req">*</span></label>
+          <div class="editor-toolbar">
+            <button class="tb-btn" onclick="fmt('bold')" title="Bold"><b>B</b></button>
+            <button class="tb-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
+            <button class="tb-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+            <div class="tb-sep"></div>
+            <button class="tb-btn" onclick="insertTag('## ')" title="Heading">H2</button>
+            <button class="tb-btn" onclick="insertTag('### ')" title="Subheading">H3</button>
+            <div class="tb-sep"></div>
+            <button class="tb-btn" onclick="insertTag('> ')" title="Quote">❝</button>
+            <button class="tb-btn" onclick="insertTag('`code`')" title="Code">&lt;/&gt;</button>
+            <button class="tb-btn" onclick="insertTag('- ')" title="List">☰</button>
+          </div>
+          <textarea id="content" placeholder="Tell your story here…"></textarea>
+        </div>
+
+        <div class="field-group">
+          <label>Excerpt <span class="req">*</span></label>
+          <textarea id="excerpt" placeholder="A short summary shown on the feed card (2–3 sentences)…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside>
+      <!-- Featured Image (UI only - no backend) -->
+      <div class="sidebar-card">
+        <h4>Featured Image</h4>
+        <div class="image-dropzone" id="dropzone">
+          <input type="file" accept="image/*" id="img-input" onchange="previewImage(event)" />
+          <div class="dropzone-icon">🖼️</div>
+          <div class="dropzone-text">Drag & Drop your image<br/>or <span class="dropzone-browse">Browse</span></div>
+        </div>
+        <img id="img-preview" alt="Preview" />
+        <div class="note-text">* Image preview only. Not sent to server in current setup.</div>
+      </div>
+
+      <!-- Author + Category -->
+      <div class="sidebar-card">
+        <h4>Post Settings</h4>
+        <div class="field-group">
+          <label>Author <span class="req">*</span></label>
+          <input type="text" id="author-display" readonly placeholder="You (auto-filled)" style="background:#f0ede8;cursor:default;" />
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label>Category</label>
+          <select id="category">
+            <option value="">Select a category</option>
+            <option value="1">Technology</option>
+            <option value="2">Travel</option>
+            <option value="3">Health</option>
+            <option value="4">Finance</option>
+            <option value="5">Lifestyle</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Publish -->
+      <div class="sidebar-card">
+        <h4>Publish</h4>
+        <button class="publish-btn" onclick="publishPost()">Publish Story →</button>
+        <button class="draft-btn" onclick="window.location.href='index.html'">Cancel</button>
+      </div>
+    </aside>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // Redirect if not logged in
+    if (!isLoggedIn()) window.location.href = 'login.html';
+
+    document.getElementById('author-display').value = getUsername() || '';
+
+    function fmt(cmd) {
+      // Simple textarea-based formatting (inserts markdown markers)
+      const ta = document.getElementById('content');
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const sel = ta.value.substring(start, end);
+      const map = { bold: `**${sel}**`, italic: `*${sel}*`, underline: `__${sel}__` };
+      const replacement = map[cmd] || sel;
+      ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
+      ta.focus();
+    }
+
+    function insertTag(prefix) {
+      const ta = document.getElementById('content');
+      const start = ta.selectionStart;
+      const before = ta.value.substring(0, start);
+      const after = ta.value.substring(start);
+      ta.value = before + prefix + after;
+      ta.focus();
+      ta.setSelectionRange(start + prefix.length, start + prefix.length);
+    }
+
+    function previewImage(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = document.getElementById('img-preview');
+        img.src = ev.target.result;
+        img.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function publishPost() {
+      const title = document.getElementById('title').value.trim();
+      const content = document.getElementById('content').value.trim();
+      const excerpt = document.getElementById('excerpt').value.trim();
+      const categoryId = document.getElementById('category').value;
+      const err = document.getElementById('error-msg');
+      const suc = document.getElementById('success-msg');
+      err.style.display = 'none'; suc.style.display = 'none';
+
+      if (!title || !content || !excerpt) {
+        err.textContent = 'Title, content and excerpt are required.';
+        err.style.display = 'block';
+        return;
+      }
+
+      try {
+        const res = await createBlog(title, content, categoryId, excerpt);
+        if (res.id) {
+          suc.textContent = 'Story published successfully! Redirecting…';
+          suc.style.display = 'block';
+          setTimeout(() => window.location.href = `blog-detail.html?id=${res.id}`, 1200);
+        } else {
+          err.textContent = res.message || 'Could not publish. Try again.';
+          err.style.display = 'block';
+        }
+      } catch (e) {
+        err.textContent = 'Server error. Make sure Spring Boot is running.';
+        err.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

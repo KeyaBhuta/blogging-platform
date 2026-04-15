@@ -1,103 +1,527 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-<meta charset='UTF-8'>
-<title>Blog - BlogHub</title>
-<style>
-body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-.btn { padding:8px 16px; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer; }
-.btn-like { background:#ea580c; }
-.comment { border-left:3px solid #2563eb; padding:8px 12px; margin:8px 0; background:#f1f5f9; }
-textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; }
-a { color:#2563eb; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — InkWell</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0d1b2a; --navy-mid: #1a2e45; --navy-light: #243b55;
+      --brown: #7c4e32; --brown-light: #a06640; --brown-warm: #c8956a;
+      --cream: #f5f0e8; --cream-dark: #e8dfd0; --white: #ffffff; --text-light: #b0c4de;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--navy); }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 68px;
+      background: var(--navy); border-bottom: 2px solid var(--brown);
+    }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: var(--cream); text-decoration: none; }
+    .nav-logo span { color: var(--brown-warm); }
+    .nav-back { color: var(--text-light); text-decoration: none; font-size: 0.88rem; display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+    .nav-back:hover { color: var(--brown-warm); }
+
+    /* HERO BANNER */
+    .post-banner {
+      margin-top: 68px;
+      background: var(--navy);
+      min-height: 340px;
+      display: flex;
+      align-items: flex-end;
+      padding: 60px 80px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /*
+      ═══════════════════════════════════════════
+      PLACEHOLDER: Post hero banner image
+      Set background-image on .post-banner or add <img> inside it.
+      Recommended: 1400x400px wide editorial image.
+      ═══════════════════════════════════════════
+    */
+    .post-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--navy-light) 0%, var(--navy) 70%);
+      opacity: 0.9;
+    }
+
+    .post-banner-ph {
+      position: absolute;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      color: rgba(255,255,255,0.1);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .post-header { position: relative; z-index: 1; max-width: 860px; }
+
+    .post-category {
+      display: inline-block;
+      background: var(--brown);
+      color: var(--cream);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 16px;
+    }
+
+    .post-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .post-author-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .post-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--brown);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--cream); font-weight: 700; font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .post-author-name { color: var(--cream); font-weight: 500; font-size: 0.9rem; }
+    .post-date { color: var(--text-light); font-size: 0.82rem; }
+
+    .meta-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.2); }
+
+    .follow-btn {
+      background: transparent;
+      border: 1.5px solid var(--brown-warm);
+      color: var(--brown-warm);
+      padding: 6px 18px;
+      border-radius: 4px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .follow-btn:hover { background: var(--brown-warm); color: var(--navy); }
+
+    /* CONTENT AREA */
+    .post-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 48px;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .post-body {
+      font-family: 'Lora', serif;
+      font-size: 1.08rem;
+      line-height: 1.85;
+      color: #2a2a2a;
+    }
+
+    .post-body h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin: 36px 0 16px;
+    }
+
+    .post-body h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--navy-mid);
+      margin: 28px 0 12px;
+    }
+
+    .post-body p { margin-bottom: 20px; }
+
+    .post-body blockquote {
+      border-left: 4px solid var(--brown);
+      padding: 16px 24px;
+      margin: 28px 0;
+      background: var(--white);
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: var(--navy-mid);
+    }
+
+    .post-body code {
+      background: var(--navy);
+      color: var(--brown-warm);
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88em;
+    }
+
+    .post-body ul, .post-body ol {
+      padding-left: 28px;
+      margin-bottom: 20px;
+    }
+
+    .post-body li { margin-bottom: 6px; }
+
+    /* Action bar */
+    .post-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 24px 0;
+      border-top: 1px solid var(--cream-dark);
+      border-bottom: 1px solid var(--cream-dark);
+      margin-bottom: 40px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--white);
+      border: 1.5px solid var(--cream-dark);
+      color: var(--navy-mid);
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover { border-color: var(--brown); color: var(--brown); }
+    .action-btn.active { background: var(--brown); border-color: var(--brown); color: var(--cream); }
+
+    /* Comments */
+    .comments-section { margin-top: 48px; }
+
+    .comments-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 28px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--brown);
+    }
+
+    .comment-form { margin-bottom: 36px; }
+
+    .comment-input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1.5px solid var(--cream-dark);
+      border-radius: 8px;
+      background: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      color: var(--navy);
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .comment-input:focus { border-color: var(--brown); }
+    .comment-input::placeholder { color: #bbb; }
+
+    .comment-submit {
+      margin-top: 10px;
+      background: var(--navy);
+      color: var(--cream);
+      border: none;
+      padding: 11px 28px;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .comment-submit:hover { background: var(--navy-light); }
+
+    .comment-item {
+      display: flex;
+      gap: 14px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .comment-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--navy-mid);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--brown-warm); font-weight: 700; font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .comment-content .comment-author { font-weight: 600; font-size: 0.88rem; color: var(--navy); margin-bottom: 4px; }
+    .comment-content .comment-text { font-size: 0.9rem; color: #444; line-height: 1.65; }
+    .comment-content .comment-time { font-size: 0.75rem; color: #aaa; margin-top: 4px; }
+
+    /* Sidebar */
+    .post-sidebar { position: sticky; top: 88px; }
+
+    .sidebar-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 24px;
+      border: 1px solid var(--cream-dark);
+      margin-bottom: 20px;
+    }
+
+    .sidebar-card h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--navy);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid var(--brown);
+    }
+
+    .sidebar-author-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .sidebar-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--navy-mid); display: flex; align-items: center; justify-content: center; color: var(--brown-warm); font-weight: 700; }
+    .sidebar-name { font-weight: 600; font-size: 0.9rem; color: var(--navy); }
+    .sidebar-bio { font-size: 0.82rem; color: #777; line-height: 1.6; margin-bottom: 14px; }
+
+    .sidebar-follow-btn {
+      width: 100%;
+      background: var(--navy);
+      color: var(--cream);
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sidebar-follow-btn:hover { background: var(--navy-light); }
+
+    .delete-btn {
+      background: #fde8e8;
+      color: #c0392b;
+      border: 1px solid #f5c6c6;
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .delete-btn:hover { background: #f5c6c6; }
+
+    @media (max-width: 900px) {
+      .post-layout { grid-template-columns: 1fr; }
+      .post-sidebar { display: none; }
+      .post-banner { padding: 48px 24px 36px; }
+    }
+  </style>
 </head>
 <body>
-<p><a href='index.html'>&larr; Back to Feed</a></p>
-<div id='blog-content'><p>Loading...</p></div>
-<div style='margin:20px 0'>
-<button class='btn btn-like' onclick='doLike()'>
-  ❤ Like (<span id='like-count'>0</span>)
-</button>
-<button class='btn' style='background:#7c3aed; margin-left:8px' onclick='doBookmark()'>Bookmark</button>
-</div>
-<h3>Comments</h3>
-<div id='comments-list'></div>
-<div id='comment-form' style='margin-top:16px'>
-<textarea id='comment-input' rows='3' placeholder='Write a comment...'></textarea>
-<button class='btn' onclick='doComment()' style='margin-top:8px'>Post Comment</button>
-</div>
-<script src='js/api.js'></script>
-<script>
-const blogId = new URLSearchParams(window.location.search).get('id');
-if (!isLoggedIn()) document.getElementById('comment-form').style.display='none';
+  <nav>
+    <a href="index.html" class="nav-logo">Ink<span>Well</span></a>
+    <a href="index.html" class="nav-back">← Back to Feed</a>
+  </nav>
 
-async function loadBlog() {
-  const b = await getBlog(blogId);
-  const myId = parseInt(getUserId());
-  const deleteBtn = b.author.id === myId
-    ? `<button onclick='removeBlog()' class='btn' style='background:#dc2626; margin-top:12px'>Delete Blog</button>`
-    : '';
-  document.getElementById('blog-content').innerHTML = `<h1>${b.title}</h1><p style='color:#64748b'>By ${b.author.username} &middot; ${new Date(b.createdAt).toLocaleDateString()}</p><p style='color:#64748b'>Category: ${b.category ? b.category.name : 'Uncategorized'}</p><hr><div style='line-height:1.7'>${b.content.replace(/\n/g,'<br>')}</div>${deleteBtn}`;
-  const likeData = await getLikeCount(blogId);
-  document.getElementById('like-count').textContent = likeData.likes;
-}
-
-async function removeBlog() {
-  if (!confirm('Delete this blog permanently?')) return;
-  await deleteBlog(blogId);
-  window.location.href = 'index.html';
-}
-
-async function loadComments() {
-  const comments = await getComments(blogId);
-  const el = document.getElementById('comments-list');
-  if (!comments.length) { el.innerHTML = '<p>No comments yet.</p>'; return; }
-  const myId = parseInt(getUserId());
-  el.innerHTML = comments.map(c => `
-    <div class='comment'>
-      <b>${c.user.username}</b>: ${c.content}
-      ${c.user.id === myId ? `<button onclick='removeComment(${c.id})' style='float:right; background:none; border:none; color:red; cursor:pointer; font-size:12px'>Delete</button>` : ''}
+  <!-- POST BANNER -->
+  <div class="post-banner" id="post-banner">
+    <!--
+      PLACEHOLDER: Post featured image
+      If your blog has a featured image URL, add an <img> here and
+      set the banner's background or overlay appropriately.
+      Size: 1400 × 400 px recommended
+    -->
+    <div class="post-banner-ph">Featured image placeholder — 1400 × 400 px</div>
+    <div class="post-header">
+      <div class="post-category" id="post-category"></div>
+      <h1 class="post-title" id="post-title">Loading…</h1>
+      <div class="post-meta">
+        <div class="post-author-wrap">
+          <div class="post-avatar" id="post-avatar">?</div>
+          <div>
+            <div class="post-author-name" id="post-author-name">–</div>
+            <div class="post-date" id="post-date">–</div>
+          </div>
+        </div>
+        <div class="meta-sep"></div>
+        <button class="follow-btn" id="follow-btn" onclick="handleFollow()">+ Follow</button>
+      </div>
     </div>
-  `).join('');
-}
+  </div>
 
-async function removeComment(commentId) {
-  if (!confirm('Delete this comment?')) return;
-  await deleteComment(commentId);
-  loadComments();
-}
+  <!-- CONTENT -->
+  <div class="post-layout">
+    <div class="post-main">
+      <!-- Action bar -->
+      <div class="post-actions">
+        <button class="action-btn" id="like-btn" onclick="handleLike()">♥ <span id="like-count">0</span> Likes</button>
+        <button class="action-btn" id="bookmark-btn" onclick="handleBookmark()">🔖 Save</button>
+      </div>
 
-async function doLike() {
-  if (!isLoggedIn()) { alert('Please login to like'); return; }
-  const current = parseInt(document.getElementById('like-count').textContent);
-  const data = await likeBlog(blogId);
-  if (data.likes <= current) {
-    const undo = await unlikeBlog(blogId);
-    document.getElementById('like-count').textContent = undo.likes;
-  } else {
-    document.getElementById('like-count').textContent = data.likes;
-  }
-}
+      <div class="post-body" id="post-body">Loading…</div>
 
-async function doBookmark() {
-  if (!isLoggedIn()) { alert('Please login to bookmark'); return; }
-  await bookmarkBlog(blogId);
-  alert('Bookmarked!');
-}
+      <!-- Comments -->
+      <div class="comments-section">
+        <div class="comments-title">Comments</div>
+        <div class="comment-form" id="comment-form">
+          <textarea class="comment-input" id="comment-input" placeholder="Write a thoughtful comment…"></textarea>
+          <button class="comment-submit" onclick="submitComment()">Post Comment</button>
+        </div>
+        <div id="comments-list"></div>
+      </div>
+    </div>
 
-async function doComment() {
-  const content = document.getElementById('comment-input').value.trim();
-  if (!content) return;
-  const data = await postComment(blogId, content);
-  if (data.id) {
-    document.getElementById('comment-input').value = '';
-    loadComments();
-  } else { alert(data.message || 'Comment blocked by moderation'); }
-}
+    <!-- Sidebar -->
+    <aside class="post-sidebar">
+      <div class="sidebar-card" id="author-card">
+        <h4>About the Author</h4>
+        <div class="sidebar-author-wrap">
+          <div class="sidebar-avatar" id="sb-avatar">?</div>
+          <div class="sidebar-name" id="sb-name">–</div>
+        </div>
+        <p class="sidebar-bio" id="sb-bio">–</p>
+        <button class="sidebar-follow-btn" onclick="handleFollow()">Follow Author</button>
+      </div>
+      <div class="sidebar-card" id="delete-card" style="display:none">
+        <h4>Manage Post</h4>
+        <button class="delete-btn" onclick="handleDelete()">🗑 Delete This Post</button>
+      </div>
+    </aside>
+  </div>
 
-loadBlog();
-loadComments();
-</script>
+  <script src="js/api.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const blogId = params.get('id');
+    let authorId = null;
+
+    function timeAgo(d) {
+      if (!d) return '';
+      const diff = (Date.now() - new Date(d)) / 1000;
+      if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + ' hr ago';
+      return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    async function loadPost() {
+      if (!blogId) { document.getElementById('post-title').textContent = 'Post not found.'; return; }
+      const b = await getBlog(blogId);
+      authorId = b.author?.id;
+
+      document.title = b.title + ' — InkWell';
+      document.getElementById('post-title').textContent = b.title;
+      document.getElementById('post-category').textContent = b.category?.name || '';
+      document.getElementById('post-date').textContent = timeAgo(b.createdAt);
+
+      const initials = (b.author?.username || 'U').substring(0,2).toUpperCase();
+      document.getElementById('post-avatar').textContent = initials;
+      document.getElementById('post-author-name').textContent = b.author?.username || 'Unknown';
+      document.getElementById('sb-avatar').textContent = initials;
+      document.getElementById('sb-name').textContent = b.author?.username || 'Unknown';
+      document.getElementById('sb-bio').textContent = b.author?.bio || 'This author has not added a bio yet.';
+
+      document.getElementById('post-body').innerHTML = b.content.replace(/\n/g, '<br/>');
+
+      // Show delete if own post
+      if (isLoggedIn() && getUserId() == authorId) {
+        document.getElementById('delete-card').style.display = 'block';
+      }
+
+      loadComments();
+    }
+
+    async function loadComments() {
+      const list = document.getElementById('comments-list');
+      const comments = await getComments(blogId);
+      if (!comments || comments.length === 0) {
+        list.innerHTML = `<p style="color:#aaa;font-size:0.88rem;padding:20px 0">No comments yet. Be the first!</p>`;
+        return;
+      }
+      list.innerHTML = comments.map(c => {
+        const init = (c.user?.username || 'U').substring(0,2).toUpperCase();
+        return `<div class="comment-item">
+          <div class="comment-avatar">${init}</div>
+          <div class="comment-content">
+            <div class="comment-author">${c.user?.username || 'User'}</div>
+            <div class="comment-text">${c.content}</div>
+            <div class="comment-time">${timeAgo(c.createdAt)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function submitComment() {
+      if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+      const input = document.getElementById('comment-input');
+      const text = input.value.trim();
+      if (!text) return;
+      await postComment(blogId, text);
+      input.value = '';
+      loadComments();
+    }
+
+    async function handleLike() {
+      if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+      const btn = document.getElementById('like-btn');
+      try {
+        const res = await likeBlog(blogId);
+        document.getElementById('like-count').textContent = res.likes || '';
+        btn.classList.add('active');
+      } catch {}
+    }
+
+    async function handleBookmark() {
+      if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+      await bookmarkBlog(blogId);
+      document.getElementById('bookmark-btn').classList.add('active');
+    }
+
+    async function handleFollow() {
+      if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+      if (!authorId) return;
+      await followUser(authorId);
+      document.getElementById('follow-btn').textContent = '✓ Following';
+    }
+
+    async function handleDelete() {
+      if (!confirm('Delete this post? This cannot be undone.')) return;
+      await deleteBlog(blogId);
+      window.location.href = 'index.html';
+    }
+
+    // Hide comment form if not logged in
+    if (!isLoggedIn()) {
+      document.getElementById('comment-form').innerHTML = `<p style="color:#888;font-size:0.88rem"><a href="login.html" style="color:var(--brown)">Log in</a> to leave a comment.</p>`;
+    }
+
+    loadPost();
+  </script>
 </body>
 </html>
