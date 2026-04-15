@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>BlogHub - Feed</title>
+<style>
+body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+nav { display:flex; justify-content:space-between; align-items:center;
+padding:10px 0; border-bottom:2px solid #2563eb; margin-bottom:20px; }
+.search-bar { display:flex; gap:10px; margin-bottom:20px; }
+.search-bar input, .search-bar select { padding:8px; border:1px solid #ccc; border-radius
+:4px; }
+.search-bar input { flex:1; }
+.card { border:1px solid #e2e8f0; border-radius:8px; padding:16px;
+margin-bottom:16px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.card h3 a { color:#1a1a2e; text-decoration:none; }
+.card h3 a:hover { color:#2563eb; }
+.meta { color:#64748b; font-size:13px; margin:4px 0; }
+.excerpt { color:#374151; margin:8px 0; }
+nav a { color:#2563eb; text-decoration:none; margin-left:12px; }
+.btn { padding:8px 16px; background:#2563eb; color:white;
+border:none; border-radius:4px; cursor:pointer; text-decoration:none; }
+</style>
+</head>
+<body>
+<nav>
+<span style='font-size:22px;font-weight:bold;color:#2563eb;'>BlogHub</span>
+<div>
+<span id='nav-user'></span>
+<a href='create-blog.html'>+ New Blog</a>
+<a href='profile.html'>Profile</a>
+<a href='#' onclick='logout()'>Logout</a>
+</div>
+</nav>
+<div class='search-bar'>
+<input id='search' placeholder='Search blogs...' oninput='loadBlogs()'>
+<select id='catFilter' onchange='loadBlogs()'>
+<option value=''>All Categories</option>
+<option value='1'>Tech</option>
+<option value='2'>Travel</option>
+<option value='3'>Health</option>
+<option value='4'>Finance</option>
+<option value='5'>Lifestyle</option>
+</select>
+</div>
+<div id='feed'><p>Loading blogs...</p></div>
+<script src='js/api.js'></script>
+<script>
+document.getElementById('nav-user').textContent = getUsername() || '';
+async function loadBlogs() {
+const s = document.getElementById('search').value;
+const c = document.getElementById('catFilter').value;
+const blogs = await getBlogs(s, c);
+const feed = document.getElementById('feed');
+if (!blogs.length) { feed.innerHTML = '<p>No blogs found.</p>'; return; }
+feed.innerHTML = blogs.map(b => `
+<div class='card'>
+<h3><a href='blog-detail.html?id=${b.id}'>${b.title}</a></h3>
+<p class='meta'>By ${b.author.username}</p>
+<p class='excerpt'>${b.content.substring(0, 150)}...</p>
+<a href='blog-detail.html?id=${b.id}' class='btn'>Read More</a>
+</div>`).join('');
+}
+loadBlogs();
+</script>
+</body></html>

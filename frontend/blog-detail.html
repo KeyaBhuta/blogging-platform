@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>Blog - BlogHub</title>
+<style>
+body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+.btn { padding:8px 16px; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer; }
+.btn-like { background:#ea580c; }
+.comment { border-left:3px solid #2563eb; padding:8px 12px; margin:8px 0; background:#f1f5f9; }
+textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; }
+a { color:#2563eb; }
+</style>
+</head>
+<body>
+<p><a href='index.html'>&larr; Back to Feed</a></p>
+<div id='blog-content'><p>Loading...</p></div>
+<div style='margin:20px 0'>
+<button class='btn btn-like' onclick='doLike()'>
+  ❤ Like (<span id='like-count'>0</span>)
+</button>
+<button class='btn' style='background:#7c3aed; margin-left:8px' onclick='doBookmark()'>Bookmark</button>
+</div>
+<h3>Comments</h3>
+<div id='comments-list'></div>
+<div id='comment-form' style='margin-top:16px'>
+<textarea id='comment-input' rows='3' placeholder='Write a comment...'></textarea>
+<button class='btn' onclick='doComment()' style='margin-top:8px'>Post Comment</button>
+</div>
+<script src='js/api.js'></script>
+<script>
+const blogId = new URLSearchParams(window.location.search).get('id');
+if (!isLoggedIn()) document.getElementById('comment-form').style.display='none';
+
+async function loadBlog() {
+  const b = await getBlog(blogId);
+  const myId = parseInt(getUserId());
+  const deleteBtn = b.author.id === myId
+    ? `<button onclick='removeBlog()' class='btn' style='background:#dc2626; margin-top:12px'>Delete Blog</button>`
+    : '';
+  document.getElementById('blog-content').innerHTML = `<h1>${b.title}</h1><p style='color:#64748b'>By ${b.author.username} &middot; ${new Date(b.createdAt).toLocaleDateString()}</p><p style='color:#64748b'>Category: ${b.category ? b.category.name : 'Uncategorized'}</p><hr><div style='line-height:1.7'>${b.content.replace(/\n/g,'<br>')}</div>${deleteBtn}`;
+  const likeData = await getLikeCount(blogId);
+  document.getElementById('like-count').textContent = likeData.likes;
+}
+
+async function removeBlog() {
+  if (!confirm('Delete this blog permanently?')) return;
+  await deleteBlog(blogId);
+  window.location.href = 'index.html';
+}
+
+async function loadComments() {
+  const comments = await getComments(blogId);
+  const el = document.getElementById('comments-list');
+  if (!comments.length) { el.innerHTML = '<p>No comments yet.</p>'; return; }
+  const myId = parseInt(getUserId());
+  el.innerHTML = comments.map(c => `
+    <div class='comment'>
+      <b>${c.user.username}</b>: ${c.content}
+      ${c.user.id === myId ? `<button onclick='removeComment(${c.id})' style='float:right; background:none; border:none; color:red; cursor:pointer; font-size:12px'>Delete</button>` : ''}
+    </div>
+  `).join('');
+}
+
+async function removeComment(commentId) {
+  if (!confirm('Delete this comment?')) return;
+  await deleteComment(commentId);
+  loadComments();
+}
+
+async function doLike() {
+  if (!isLoggedIn()) { alert('Please login to like'); return; }
+  const current = parseInt(document.getElementById('like-count').textContent);
+  const data = await likeBlog(blogId);
+  if (data.likes <= current) {
+    const undo = await unlikeBlog(blogId);
+    document.getElementById('like-count').textContent = undo.likes;
+  } else {
+    document.getElementById('like-count').textContent = data.likes;
+  }
+}
+
+async function doBookmark() {
+  if (!isLoggedIn()) { alert('Please login to bookmark'); return; }
+  await bookmarkBlog(blogId);
+  alert('Bookmarked!');
+}
+
+async function doComment() {
+  const content = document.getElementById('comment-input').value.trim();
+  if (!content) return;
+  const data = await postComment(blogId, content);
+  if (data.id) {
+    document.getElementById('comment-input').value = '';
+    loadComments();
+  } else { alert(data.message || 'Comment blocked by moderation'); }
+}
+
+loadBlog();
+loadComments();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>Login - BlogHub</title>
+<style>
+body { font-family: Arial, sans-serif; max-width: 400px;
+margin: 80px auto; padding: 20px; }
+input { width:100%; padding:10px; margin:8px 0; box-sizing:border-box; border:1px solid #ccc; border-radius: 4px; }
+button { width:100%; padding:12px; background:#2563eb; color:white;
+border:none; border-radius:4px; cursor:pointer; font-size:16px; }
+button:hover { background:#1d4ed8; }
+.error { color: red; font-size: 14px; }
+a { color:#2563eb; }
+</style>
+</head>
+<body>
+<h2>Login to BlogHub</h2>
+<input id='username' placeholder='Username'>
+<input id='password' type='password' placeholder='Password'>
+<button onclick='doLogin()'>Login</button>
+<p class='error' id='err'></p>
+<p>No account? <a href='register.html'>Register</a></p>
+<script src='js/api.js'></script>
+<script>
+if (isLoggedIn()) window.location.href = 'index.html';
+async function doLogin() {
+const u = document.getElementById('username').value.trim();
+const p = document.getElementById('password').value;
+if (!u || !p) { document.getElementById('err').textContent = 'Fill all fields'; return;
+}
+const data = await login(u, p);
+if (data.token) window.location.href = 'index.html';
+else document.getElementById('err').textContent = data.message || 'Login failed';
+}
+</script>
+</body></html>
