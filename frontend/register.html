@@ -73,23 +73,90 @@
   </div>
   <script src="js/api.js"></script>
   <script>
-    async function doRegister() {
-      const u = document.getElementById('username').value.trim();
-      const e = document.getElementById('email').value.trim();
-      const p = document.getElementById('password').value;
-      const err = document.getElementById('error-msg');
-      err.style.display = 'none';
-      if (!u || !e || !p) { err.textContent = 'Please fill in all fields.'; err.style.display = 'block'; return; }
-      if (p.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
-      try {
-        const data = await register(u, e, p);
-        if (data.token) window.location.href = 'index.html';
-        else { err.textContent = data.message || 'Registration failed. Try a different username.'; err.style.display = 'block'; }
-      } catch (ex) {
-        err.textContent = 'Could not connect to server.'; err.style.display = 'block';
-      }
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidUsername(username) {
+  return /^[a-zA-Z0-9_]{3,20}$/.test(username);
+}
+
+function isValidPassword(password) {
+  return password.length >= 6;
+}
+
+async function doRegister() {
+  const u = document.getElementById('username').value.trim();
+  const e = document.getElementById('email').value.trim();
+  const p = document.getElementById('password').value;
+  const err = document.getElementById('error-msg');
+
+  err.style.display = 'none';
+
+  // Validation
+  if (!u || !e || !p) {
+    err.textContent = 'Please fill in all fields.';
+    err.style.display = 'block';
+    return;
+  }
+
+  if (!isValidUsername(u)) {
+    err.textContent = 'Username must be 3–20 characters (letters, numbers, underscore).';
+    err.style.display = 'block';
+    return;
+  }
+
+  if (!isValidEmail(e)) {
+    err.textContent = 'Enter a valid email (example@domain.com).';
+    err.style.display = 'block';
+    return;
+  }
+
+  if (!isValidPassword(p)) {
+    err.textContent = 'Password must be at least 6 characters.';
+    err.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('http://localhost:8080/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, email: e, password: p })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.token) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('userId', data.userId);
+      window.location.href = 'index.html';
+      return;
     }
-    document.addEventListener('keydown', ev => { if (ev.key === 'Enter') doRegister(); });
-  </script>
+
+    // Better error handling
+    if (res.status === 409) {
+      err.textContent = 'Email already registered. Please login.';
+    } else if (data.message?.toLowerCase().includes('email')) {
+      err.textContent = 'Email already exists.';
+    } else if (data.message?.toLowerCase().includes('username')) {
+      err.textContent = 'Username already taken.';
+    } else {
+      err.textContent = data.message || 'Registration failed.';
+    }
+
+    err.style.display = 'block';
+
+  } catch (ex) {
+    err.textContent = 'A User with this email already exists. Please login or register via another email.';
+    err.style.display = 'block';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doRegister();
+});
+</script>
 </body>
 </html>

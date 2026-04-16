@@ -215,23 +215,77 @@
 
   <script src="js/api.js"></script>
   <script>
-    async function doLogin() {
-      const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value;
-      const err = document.getElementById('error-msg');
-      err.style.display = 'none';
-      if (!u || !p) { err.textContent = 'Please fill in all fields.'; err.style.display = 'block'; return; }
-      try {
-        const data = await login(u, p);
-        if (data.token) window.location.href = 'index.html';
-        else { err.textContent = data.message || 'Login failed. Check your credentials.'; err.style.display = 'block'; }
-      } catch (e) {
-        err.textContent = 'Could not connect to server. Is Spring Boot running?';
-        err.style.display = 'block';
-      }
+function isValidUsername(username) {
+  return /^[a-zA-Z0-9_]{3,20}$/.test(username);
+}
+
+function isValidPassword(password) {
+  return password.length >= 6;
+}
+
+async function doLogin() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  const err = document.getElementById('error-msg');
+
+  err.style.display = 'none';
+
+  // Validation
+  if (!u || !p) {
+    err.textContent = 'Please fill in all fields.';
+    err.style.display = 'block';
+    return;
+  }
+
+  if (!isValidUsername(u)) {
+    err.textContent = 'Username must be 3–20 characters (letters, numbers, underscore).';
+    err.style.display = 'block';
+    return;
+  }
+
+  if (!isValidPassword(p)) {
+    err.textContent = 'Password must be at least 6 characters.';
+    err.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('http://localhost:8080/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.token) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('userId', data.userId);
+      window.location.href = 'index.html';
+      return;
     }
 
-    document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  </script>
+    // Proper error handling
+    if (res.status === 404) {
+      err.textContent = 'User does not exist. Please sign up.';
+    } else if (res.status === 401 || res.status === 403) {
+      err.textContent = 'Incorrect password.';
+    } else {
+      err.textContent = data.message || 'Login failed.';
+    }
+
+    err.style.display = 'block';
+
+  } catch (e) {
+    err.textContent = 'This user does not exist. Please sign up instead.';
+    err.style.display = 'block';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
 </body>
 </html>
