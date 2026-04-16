@@ -200,20 +200,11 @@
 
     .hero-cta-ghost:hover { border-color: var(--brown-warm); color: var(--brown-warm); }
 
-    /* Hero image grid area */
     .hero-visual {
       position: relative;
       overflow: hidden;
     }
 
-    /* 
-      ════════════════════════════════════════════════════
-      PLACEHOLDER: Hero Featured Image
-      Replace the gradient below with your actual hero image.
-      Use an <img> tag or set background-image on .hero-img-placeholder.
-      Recommended size: 800x700px, high quality editorial photo.
-      ════════════════════════════════════════════════════
-    */
     .hero-img-placeholder {
       width: 100%;
       height: 100%;
@@ -400,19 +391,12 @@
       box-shadow: 0 12px 32px rgba(13,27,42,0.12);
     }
 
-    /* 
-      ════════════════════════════════════════════════════
-      PLACEHOLDER: Blog Card Thumbnail
-      Each .card-img div is a placeholder for a featured image.
-      If your backend returns an imageUrl field on the blog object,
-      replace the gradient with: background-image: url(b.imageUrl)
-      Recommended image size: 480x280px
-      ════════════════════════════════════════════════════
-    */
     .card-img {
       width: 100%;
       height: 200px;
       background: linear-gradient(135deg, var(--navy-light), var(--navy-mid));
+      background-size: cover;
+      background-position: center;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -643,19 +627,8 @@
     </div>
 
     <div class="hero-visual">
-      <!--
-        ═══════════════════════════════════════════════════
-        PLACEHOLDER: HERO IMAGE
-        Replace this entire .hero-img-placeholder div with:
-          <img src="your-hero-image.jpg" style="width:100%;height:100%;object-fit:cover;" />
-        Or set background-image on .hero-visual in CSS.
-        Suggested: A dramatic editorial photo, illustrated crowd,
-        or abstract texture — 1000x800px minimum.
-        ═══════════════════════════════════════════════════
-      -->
       <div class="hero-img-placeholder">
-        <img src="frontend\assets\resized-image.png" style="width:100%;height:100%;object-fit:cover;" />
-        
+        <img src="assets/resized-image.png" style="width:100%;height:100%;object-fit:cover;" />
       </div>
 
       <div class="hero-featured-card" id="hero-featured-card" style="display:none">
@@ -697,14 +670,26 @@
   <!-- FOOTER -->
   <footer>
     <div class="footer-logo">Ink<span>Well</span></div>
-    <p>© 2024 InkWell Blogging Platform</p>
+    <p>© 2026 InkWell Blogging Platform</p>
   </footer>
 
   <div class="toast" id="toast"></div>
 
   <script src="js/api.js"></script>
   <script>
-    const CAT_NAMES = { '1':'Technology','2':'Travel','3':'Health','4':'Finance','5':'Lifestyle' };
+    // ── Category image seeds for picsum (consistent per category) ──
+    const CAT_IMAGES = {
+      'Technology': 'https://picsum.photos/seed/inkwell-tech/480/200',
+      'Travel':     'https://picsum.photos/seed/inkwell-travel/480/200',
+      'Health':     'https://picsum.photos/seed/inkwell-health/480/200',
+      'Finance':    'https://picsum.photos/seed/inkwell-finance/480/200',
+      'Lifestyle':  'https://picsum.photos/seed/inkwell-lifestyle/480/200',
+    };
+
+    function getCatImage(catName, blogId) {
+      return CAT_IMAGES[catName] || `https://picsum.photos/seed/inkwell-${blogId}/480/200`;
+    }
+
     let activeCatId = '';
 
     function showToast(msg) {
@@ -758,15 +743,11 @@
         grid.innerHTML = blogs.map(b => {
           const initials = (b.author?.username || 'U').substring(0,2).toUpperCase();
           const catName = b.category?.name || '';
+          // ── Category-based cover image ──
+          const imgUrl = getCatImage(catName, b.id);
           return `
           <div class="blog-card" onclick="window.location.href='blog-detail.html?id=${b.id}'">
-            <div class="card-img">
-              <!--
-                PLACEHOLDER: Blog thumbnail image
-                If you add imageUrl to your Blog model, replace the div below with:
-                <img src="${b.imageUrl || ''}" onerror="this.style.display='none'" />
-              -->
-              <div class="card-img-ph">Blog Cover Image</div>
+            <div class="card-img" style="background-image: url('${imgUrl}'); background-size: cover; background-position: center;">
               ${catName ? `<div class="card-category">${catName}</div>` : ''}
             </div>
             <div class="card-body">
@@ -777,11 +758,11 @@
                 <span class="card-date">${timeAgo(b.createdAt)}</span>
               </div>
               <div class="card-title">${b.title}</div>
-              <div class="card-excerpt">${(b.content || '').substring(0, 160)}…</div>
+              <div class="card-excerpt">${(b.excerpt || b.content || '').substring(0, 160)}…</div>
               <div class="card-footer">
                 <a class="card-read" href="blog-detail.html?id=${b.id}">Read Story →</a>
                 <div class="card-actions">
-                  <button class="card-action-btn" onclick="event.stopPropagation(); handleLike(event, ${b.id})">♥ Like</button>
+                    <button class="card-action-btn" onclick="event.stopPropagation(); handleLike(event, ${b.id})">♥ ${b.likeCount ?? 0}</button>
                   <button class="card-action-btn" onclick="event.stopPropagation(); handleBookmark(event, ${b.id})">🔖</button>
                 </div>
               </div>
@@ -795,9 +776,13 @@
     }
 
     async function handleLike(e, blogId) {
-      if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
-      try { await likeBlog(blogId); showToast('Liked! ♥'); } catch {}
-    }
+  if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
+  try {
+    const res = await likeBlog(blogId);
+    e.target.textContent = '♥ ' + res.likes;  // ← update count instantly
+    showToast('Liked! ♥');
+  } catch {}
+}
 
     async function handleBookmark(e, blogId) {
       if (!isLoggedIn()) { window.location.href = 'login.html'; return; }

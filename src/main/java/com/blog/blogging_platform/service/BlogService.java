@@ -6,11 +6,15 @@ import com.blog.blogging_platform.model.Category;
 import com.blog.blogging_platform.model.User;
 import com.blog.blogging_platform.repository.BlogRepository;
 import com.blog.blogging_platform.repository.CategoryRepository;
+import com.blog.blogging_platform.repository.LikeRepository; // ← ADDED
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.HashMap;  // ← ADDED
 import java.util.List;
+import java.util.Map;      // ← ADDED
+import java.util.stream.Collectors; // ← ADDED
 
 @Service
 @RequiredArgsConstructor
@@ -19,23 +23,59 @@ public class BlogService {
     private final BlogRepository blogRepo;
     private final CategoryRepository categoryRepo;
     private final ContentModerationService moderationService;
+    private final LikeRepository likeRepo; // ← ADDED
 
-    public List<Blog> getAll(String search, Long categoryId) {
+    // ← ADDED: converts a Blog into a Map so likeCount can be included
+    private Map<String, Object> toMap(Blog blog) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id",        blog.getId());
+        map.put("title",     blog.getTitle());
+        map.put("content",   blog.getContent());
+        map.put("createdAt", blog.getCreatedAt());
+        map.put("type",      blog.getType());
+        map.put("likeCount", likeRepo.countByBlog(blog)); // ← key fix
+
+        Map<String, Object> author = new HashMap<>();
+        author.put("id",       blog.getAuthor().getId());
+        author.put("username", blog.getAuthor().getUsername());
+        author.put("bio",      blog.getAuthor().getBio() != null ? blog.getAuthor().getBio() : "");
+        map.put("author", author);
+
+        if (blog.getCategory() != null) {
+            Map<String, Object> cat = new HashMap<>();
+            cat.put("id",   blog.getCategory().getId());
+            cat.put("name", blog.getCategory().getName());
+            map.put("category", cat);
+        } else {
+            map.put("category", null);
+        }
+
+        return map;
+    }
+
+    // ← CHANGED: returns List<Map> instead of List<Blog> so likeCount is included
+    public List<Map<String, Object>> getAll(String search, Long categoryId) {
+        List<Blog> blogs;
         if (search != null && !search.isEmpty())
-            return blogRepo.findByTitleContainingIgnoreCase(search);
-        if (categoryId != null)
-            return blogRepo.findByCategoryId(categoryId);
-        return blogRepo.findAll();
+            blogs = blogRepo.findByTitleContainingIgnoreCase(search);
+        else if (categoryId != null)
+            blogs = blogRepo.findByCategoryId(categoryId);
+        else
+            blogs = blogRepo.findAll();
+
+        return blogs.stream().map(this::toMap).collect(Collectors.toList());
     }
 
-    public Blog getById(Long id) {
-        return blogRepo.findById(id).orElseThrow();
+    // ← CHANGED: returns Map instead of Blog so likeCount is included
+    public Map<String, Object> getById(Long id) {
+        Blog blog = blogRepo.findById(id).orElseThrow();
+        return toMap(blog);
     }
 
-    public Blog create(BlogRequest req, User user) {
+    // ← CHANGED: returns Map instead of Blog
+    public Map<String, Object> create(BlogRequest req, User user) {
         if (moderationService.containsBannedContent(req.content()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Content violates community guidelines");
+            throw new RuntimeException("Explicit content: blog can't be posted");
 
         Blog blog = new Blog();
         blog.setTitle(req.title());
@@ -47,9 +87,10 @@ public class BlogService {
             blog.setCategory(category);
         }
 
-        return blogRepo.save(blog);
+        return toMap(blogRepo.save(blog));
     }
 
+    // ← UNCHANGED
     public void delete(Long id, User user) {
         Blog blog = blogRepo.findById(id).orElseThrow();
         if (!blog.getAuthor().getId().equals(user.getId()))

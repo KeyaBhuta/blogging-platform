@@ -20,8 +20,11 @@ public class FollowController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<?> follow(@PathVariable Long userId,
-                                    @AuthenticationPrincipal User follower) {
+                                    @AuthenticationPrincipal User principal) {
+
+        User follower = userRepo.findById(principal.getId()).orElseThrow();
         User toFollow = userRepo.findById(userId).orElseThrow();
+
         if (!followRepo.existsByFollowerAndFollowing(follower, toFollow)) {
             Follow f = new Follow();
             f.setFollower(follower);
@@ -36,8 +39,11 @@ public class FollowController {
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<?> unfollow(@PathVariable Long userId,
-                                      @AuthenticationPrincipal User follower) {
+                                      @AuthenticationPrincipal User principal) {
+
+        User follower = userRepo.findById(principal.getId()).orElseThrow();
         User toUnfollow = userRepo.findById(userId).orElseThrow();
+
         followRepo.deleteByFollowerAndFollowing(follower, toUnfollow);
         return ResponseEntity.ok(Map.of("message", "Unfollowed"));
     }

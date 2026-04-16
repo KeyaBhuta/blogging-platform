@@ -5,6 +5,8 @@ import com.blog.blogging_platform.model.Blog;
 import com.blog.blogging_platform.model.User;
 import com.blog.blogging_platform.service.BlogService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -31,10 +33,16 @@ public class BlogController {
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody BlogRequest req,
-                                    @AuthenticationPrincipal User user) {
+public ResponseEntity<?> create(@RequestBody BlogRequest req,
+                                @AuthenticationPrincipal User user) {
+    try {
         return ResponseEntity.ok(blogService.create(req, user));
+    } catch (RuntimeException e) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(Map.of("message", e.getMessage()));
     }
+}
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id,

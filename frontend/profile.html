@@ -46,16 +46,6 @@
       padding-bottom: 36px;
     }
 
-    /*
-      ═══════════════════════════════════════════
-      PLACEHOLDER: Profile avatar
-      Currently shows initials. To show an uploaded
-      profile picture, set background-image on .profile-pic.
-      If you add profilePic URL to the user API response,
-      replace .profile-pic initials with an <img> tag.
-      Recommended: 150×150px circular image.
-      ═══════════════════════════════════════════
-    */
     .profile-pic {
       width: 110px; height: 110px; border-radius: 50%;
       background: var(--brown);
@@ -272,11 +262,6 @@
       <div class="profile-pic" id="profile-pic">
         <span id="profile-initials">?</span>
         <div class="profile-pic-overlay">✏️</div>
-        <!--
-          PLACEHOLDER: Profile picture upload (UI only)
-          To enable real uploads, add a multipart endpoint in Spring Boot.
-          For now this is decorative.
-        -->
       </div>
       <div class="profile-info">
         <div class="profile-username" id="profile-username">Loading…</div>
@@ -287,7 +272,8 @@
             <div class="stat-label">Stories</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num" id="followers-count">–</div>
+            <!-- FIX 1: id changed from "followers-count" to "follower-count" to match JS below -->
+            <div class="stat-num" id="follower-count">0</div>
             <div class="stat-label">Followers</div>
           </div>
         </div>
@@ -355,6 +341,11 @@
   <script>
     const params = new URLSearchParams(location.search);
     const profileId = params.get('id') || getUserId();
+
+    // FIX 2: use == (not ===) so string "3" from localStorage matches number 3 from URL param,
+    // OR just keep == which already does loose equality — your original isOwnProfile line was fine,
+    // but getUserId() must be compared to profileId (both may be strings here so == works).
+    // The real bug was the follower count element id mismatch fixed above in the HTML.
     const isOwnProfile = isLoggedIn() && getUserId() == profileId;
 
     function switchTab(tab, btn) {
@@ -389,9 +380,13 @@
         document.getElementById('edit-email').value = user.email || '';
         document.getElementById('edit-bio').value = user.bio || '';
 
+        // FIX 1: reads followerCount from API (now returned by updated UserController)
+        // and writes to the corrected element id "follower-count"
+        document.getElementById('follower-count').textContent = user.followerCount ?? 0;
+
         if (!isOwnProfile) {
           document.getElementById('profile-actions').innerHTML = `<button class="edit-toggle-btn" onclick="handleFollow()">+ Follow</button>`;
-          // Hide edit tab
+          // Hide edit tab for other users' profiles
           document.querySelectorAll('.tab-btn')[1].style.display = 'none';
         }
       } catch (e) { console.error(e); }
@@ -416,7 +411,7 @@
             <div class="blog-row-info">
               <div class="blog-row-title">${b.title}</div>
               <div class="blog-row-excerpt">${(b.content || '').substring(0, 120)}…</div>
-              <div class="blog-row-meta">${timeAgo(b.createdAt)} · ${b.category?.name || 'Uncategorized'}</div>
+              <div class="blog-row-meta">${timeAgo(b.createdAt)} · ${b.category?.name || 'Uncategorized'} · ♥ ${b.likeCount ?? 0}</div>
             </div>
           </div>`).join('');
       } catch (e) {
@@ -462,6 +457,9 @@
       if (!isLoggedIn()) { window.location.href = 'login.html'; return; }
       await followUser(profileId);
       document.getElementById('profile-actions').innerHTML = `<span style="color:var(--brown-warm);font-size:0.88rem;font-weight:500">✓ Following</span>`;
+      // Refresh follower count after following
+      const updated = await getUserProfile(profileId);
+      document.getElementById('follower-count').textContent = updated.followerCount ?? 0;
     }
 
     loadProfile();

@@ -58,13 +58,15 @@ async function getBlog(id) {
 }
 
 async function createBlog(title, content, categoryId, excerpt) {
-  const res = await fetch(`${BASE}/blogs`, {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ title, content, categoryId, excerpt })
-  });
-  return res.json();
-}
+    const res = await fetch(`${BASE}/blogs`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ title, content, categoryId, excerpt })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Something went wrong');
+    return data;
+  }
 
 async function deleteBlog(id) {
   const res = await fetch(`${BASE}/blogs/${id}`, {

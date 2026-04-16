@@ -1,6 +1,7 @@
 package com.blog.blogging_platform.controller;
 
 import com.blog.blogging_platform.model.User;
+import com.blog.blogging_platform.repository.FollowRepository;
 import com.blog.blogging_platform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserRepository userRepo;
+    private final FollowRepository followRepo; // ← ADDED
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getProfile(@PathVariable Long id) {
@@ -22,7 +24,8 @@ public class UserController {
                 "id", u.getId(),
                 "username", u.getUsername(),
                 "email", u.getEmail(),
-                "bio", u.getBio() != null ? u.getBio() : ""
+                "bio", u.getBio() != null ? u.getBio() : "",
+                "followerCount", followRepo.countByFollowing(u) // ← ADDED
             )))
             .orElse(ResponseEntity.notFound().build());
     }
@@ -43,7 +46,8 @@ public class UserController {
             "id", user.getId(),
             "username", user.getUsername(),
             "email", user.getEmail(),
-            "bio", user.getBio() != null ? user.getBio() : ""
+            "bio", user.getBio() != null ? user.getBio() : "",
+            "followerCount", followRepo.countByFollowing(user) // ← ADDED
         ));
     }
 }

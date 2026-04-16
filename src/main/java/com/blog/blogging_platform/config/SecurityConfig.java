@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/likes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/follows/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(s -> s

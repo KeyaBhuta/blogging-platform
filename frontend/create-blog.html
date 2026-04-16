@@ -380,7 +380,7 @@
           err.style.display = 'block';
         }
       } catch (e) {
-        err.textContent = 'Server error. Make sure Spring Boot is running.';
+        err.textContent =  e.message || 'Server error. Make sure Spring Boot is running.';
         err.style.display = 'block';
       }
     }
